@@ -8,9 +8,8 @@
   tasks:
     - name: configure mode BCF
       cli_command:
-        command: "{{ item }}"
+        command: enable
         sendonly: yes
-      loop: "{{ config_mode }}"
 
     - name: build L2 segments
       cli_config:
