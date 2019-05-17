@@ -1,0 +1,17 @@
+[nexus]
+PCCLAB-CORE-RT01 ansible_host=10.255.0.100 device_group='lab-nexus-rtrs'
+PCCLAB-CORE-RT02 ansible_host=10.255.0.200 device_group='lab-nexus-rtrs'
+
+[bcf]
+pcclab-bcf-ctrl ansible_host=10.255.0.50
+
+[local]
+localhost
+
+[lab:children]
+nexus
+bcf
+
+[bcfbackup:children]
+local
+bcf

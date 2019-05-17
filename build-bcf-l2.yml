@@ -1,0 +1,18 @@
+---
+- name: "Create L2 segments on BCF"
+  hosts: bcf
+  gather_facts: false
+  vars_files:
+    - vars/l2_vars.yml
+
+  tasks:
+    - name: configure mode BCF
+      cli_command:
+        command: "{{ item }}"
+        sendonly: yes
+      loop: "{{ config_mode }}"
+
+    - name: build L2 segments
+      cli_config:
+        config: "tenant {{ tenant_name }}; segment vlan{{ item.0 }}; member interface-group {{ item.1 }} vlan {{ item.0 }};"
+      loop: "{{ vlans|product(interface_groups)|list }}"

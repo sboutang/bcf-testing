@@ -1,0 +1,9 @@
+tenant_name: Default-VRF
+vlans:
+  - 200
+  - 256
+  - 272
+interface_groups:
+  - "mn-pcclab-core-sw-vpc17"
+  - "mn-pcclab-esxi01-pg1"
+  - "mn-pcclab-esxi02-pg1"

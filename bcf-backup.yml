@@ -1,0 +1,17 @@
+---
+- name: "Backup Devices"
+  hosts: bcfbackup
+  gather_facts: no
+
+  tasks:
+
+    - name: backup (bcf)
+      ios_command:
+        commands:
+          - show run
+      register: config
+      when: device_group == 'bcf'
+
+    - name: copy bcf to file
+      local_action: copy content={{ config.stdout[0] }} dest="./backup/{{ inventory_hostname }}"
+      when: device_group == 'bcf'

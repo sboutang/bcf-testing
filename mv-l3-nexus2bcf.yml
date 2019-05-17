@@ -1,0 +1,31 @@
+---
+- name: "Move L3 from nexus to BCF"
+  hosts: lab
+  gather_facts: false
+  vars_files:
+    - vars/l3_vars.yml
+
+  tasks:
+    - name: enable mode
+      cli_command:
+        command: enable
+        sendonly: yes
+      when: device_group == 'bcf'
+
+    - name: build L3 segments on BCF
+      cli_config:
+        config: "tenant {{ item.value.tenant }}; logical-router; interface segment vlan{{ item.key }}; ip address {{ item.value.ip }};"
+      loop: "{{ cidr|dict2items }}"
+      when: device_group == 'bcf'
+
+    - name: 'shutdown nexus vlan interface'
+      nxos_interface:
+        name: Vlan{{ item.key }}
+        admin_state: down
+      loop: "{{ cidr|dict2items }}"
+      when: device_group == 'lab-nexus-rtrs'
+
+    - name: save config
+      nxos_config:
+        save_when: modified
+      when: device_group == 'lab-nexus-rtrs'
