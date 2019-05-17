@@ -1,7 +1,7 @@
 cidr:
   260:
     tenant: Default-VRF
-    ip: 10.255.200.1/24
+    ip: 10.255.200.1/29
   256:
     tenant: Default-VRF
     ip: 10.255.201.1/29
