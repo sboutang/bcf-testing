@@ -3,7 +3,7 @@
   hosts: bcf
   gather_facts: false
   vars_files:
-    - vars/l2_vars.yml
+    - vars/segment_vars.yml
 
   tasks:
     - name: configure mode BCF
@@ -13,5 +13,5 @@
 
     - name: build L2 segments
       cli_config:
-        config: "tenant {{ tenant_name }}; segment vlan{{ item.0 }}; member interface-group {{ item.1 }} vlan {{ item.0 }};"
-      loop: "{{ vlans|product(interface_groups)|list }}"
+        config: "tenant {{ item.0.tenant_name }}; segment vlan{{ item.0.vlan }}; member interface-group {{ item.1 }} vlan {{ item.0.vlan }};"
+      loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"

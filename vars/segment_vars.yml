@@ -1,0 +1,22 @@
+segments:
+  - vlan: 260
+    tenant_name: Default-VRF
+    ip: 10.255.200.1/29
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"
+  - vlan: 256
+    tenant_name: Default-VRF
+    ip: 10.255.201.1/29
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"
+  - vlan: 272
+    tenant_name: Default-VRF
+    ip: 10.255.201.9/29
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"

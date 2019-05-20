@@ -3,7 +3,7 @@
   hosts: lab
   gather_facts: false
   vars_files:
-    - vars/l3_vars.yml
+    - vars/segment_vars.yml
 
   tasks:
     - name: enable mode
@@ -14,15 +14,15 @@
 
     - name: remove L3 segments from BCF
       cli_config:
-        config: "tenant {{ item.value.tenant }}; logical-router; no interface segment vlan{{ item.key }};"
-      loop: "{{ cidr|dict2items }}"
+        config: "tenant {{ item.tenant_name }}; logical-router; no interface segment vlan{{ item.vlan }};"
+      loop: "{{ segments }}"
       when: device_group == 'bcf'
 
     - name: 'bring up nexus vlan interface'
       nxos_interface:
-        name: Vlan{{ item.key }}
+        name: Vlan{{ item.vlan }}
         admin_state: up
-      loop: "{{ cidr|dict2items }}"
+      loop: "{{ segments }}"
       when: device_group == 'lab-nexus-rtrs'
 
     - name: save nexus config
