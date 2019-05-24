@@ -1,0 +1,62 @@
+---
+- name: "Build new BCF"
+  hosts: bcf
+  gather_facts: false
+  vars:
+  vars_files:
+    - vars/new_build.yml
+
+  tasks:
+    - name: "gather interface group"
+      cli_command:
+        command: "show interface-group"
+      register: gather_iface
+
+    - name: "gather tenants"
+      cli_command:
+        command: "show tenant"
+      register: gather_tenants
+
+    - name: "gather segments"
+      cli_command:
+        command: "show segment"
+      register: gather_segments
+
+    - name: "gather logical-router"
+      cli_command:
+        command: "show logical-router detail"
+      register: gather_logical_router
+
+    - name: "enable mode"
+      cli_command:
+        command: enable
+
+    - name: "build interface groups"
+      cli_config:
+        config: "interface-group {{ item.0.name }}; description {{ item.0.description }}; mode {{ item.0.mode }}; member switch {{ item.1.switch }} interface {{ item.1.interface }};"
+      loop: "{{ interface_groups | subelements('members', 'skip_missing=True') }}"
+      when: gather_iface.stdout.find(item.0.name) == -1
+
+    - name: "build tenants"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; description {{ item.tenant_desc }};"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1
+
+    - name: "configure system tenant connection"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; route 0.0.0.0/0 next-hop tenant system; interface tenant system; import-route; tenant system; logical-router; interface tenant {{ item.tenant_name }}; export-route;"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.system_connection
+
+    - name: "build L2 segments"
+      cli_config:
+        config: "tenant {{ item.0.tenant_name }}; segment {{ item.0.segment_name }}; description {{ item.0.segment_desc }}; member interface-group {{ item.1 }} vlan {{ item.0.vlan }};"
+      loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"
+      when: gather_segments.stdout.find(item.0.segment_name) == -1
+
+    - name: "build L3 segments"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; interface segment {{ item.segment_name }}; ip address {{ item.ip }};"
+      loop: "{{ segments }}"
+      when: gather_logical_router.stdout.find(item.ip) == -1

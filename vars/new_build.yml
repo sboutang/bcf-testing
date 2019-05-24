@@ -1,0 +1,119 @@
+interface_groups:
+  - name: lab-boomer
+    mode: lacp
+    description: "'scott lab server'"
+    members:
+      - switch: mn-pcclab-R1L1
+        interface: ethernet40
+      - switch: mn-pcclab-R1L2
+        interface: ethernet40
+
+        #  - name: lab-only-w-desc
+        #    mode: lacp
+        #    description: "'this is a long description'"
+        #    members:
+        #      - switch: mn-pcclab-R1L1
+        #        interface: ethernet46
+        #      - switch: mn-pcclab-R1L2
+        #        interface: ethernet46
+        #
+        #  - name: lab-only-without-desc
+        #    mode: lacp
+        #    description: "' '"
+        #    members:
+        #      - switch: mn-pcclab-R1L1
+        #        interface: ethernet47
+        #      - switch: mn-pcclab-R1L2
+        #        interface: ethernet47
+
+tenants:
+  - tenant_name: test-boomer
+    tenant_desc: "'this is just a test ansible'"
+    system_connection: true
+
+  - tenant_name: another-one
+    tenant_desc: "'test tenant2 ansible'"
+    system_connection: true
+
+  - tenant_name: super-segmented
+    tenant_desc: "'another automation test ansible'"
+    system_connection: false
+
+  - tenant_name: super-new
+    tenant_desc: "'test super-new ansible'"
+    system_connection: true
+
+    #  - tenant_name: only-this-tenant
+    #    tenant_desc: "'test only this one ansible'"
+    #    system_connection: true
+
+segments:
+  - vlan: 260
+    tenant_name: Default-VRF
+    ip: 10.255.200.1/29
+    segment_name: vlan260
+    segment_desc: "'automation test vlan260'"
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"
+
+  - vlan: 256
+    tenant_name: Default-VRF
+    ip: 10.255.201.1/29
+    segment_desc: "'automation test vlan256'"
+    segment_name: vlan256
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"
+
+  - vlan: 272
+    tenant_name: Default-VRF
+    ip: 10.255.201.9/29
+    segment_desc: "'automation test vlan272'"
+    segment_name: vlan272
+    interface_groups:
+      - "mn-pcclab-core-sw-vpc17"
+      - "mn-pcclab-esxi01-pg1"
+      - "mn-pcclab-esxi02-pg1"
+
+  - vlan: 290
+    tenant_name: test-boomer
+    ip: 10.255.201.161/29
+    segment_desc: "'automation test vlan290'"
+    segment_name: vlan290
+    interface_groups:
+      - "lab-boomer"
+
+  - vlan: 294
+    tenant_name: test-boomer
+    ip: 10.255.201.174/29
+    segment_desc: "'automation test vlan294'"
+    segment_name: vlan294
+    interface_groups:
+      - "lab-boomer"
+
+  - vlan: 296
+    tenant_name: Default-VRF
+    ip: 10.255.201.182/29
+    segment_desc: "'automation test vlan296'"
+    segment_name: vlan296
+    interface_groups:
+      - "lab-boomer"
+
+  - vlan: 299
+    tenant_name: super-new
+    ip: 10.255.201.190/29
+    segment_desc: "'automation test vlan299'"
+    segment_name: vlan299
+    interface_groups:
+      - "lab-boomer"
+
+        #  - vlan: 300
+        #    tenant_name: only-this-tenant
+        #    ip: 10.255.201.254/29
+        #    segment_desc: "'automation test vlan300'"
+        #    segment_name: vlan300
+        #    interface_groups:
+        #      - "lab-boomer"
