@@ -1,0 +1,92 @@
+---
+- name: "Manage Big Cloud Fabric"
+  hosts: bcf
+  gather_facts: false
+  vars:
+  vars_files:
+    - vars/manage_bcf.yml
+
+  tasks:
+    - name: "gather interface group"
+      cli_command:
+        command: "show interface-group"
+      register: gather_iface
+
+    - name: "gather tenants"
+      cli_command:
+        command: "show tenant"
+      register: gather_tenants
+
+    - name: "gather segments"
+      cli_command:
+        command: "show segment"
+      register: gather_segments
+
+    - name: "gather logical-router"
+      cli_command:
+        command: "show logical-router detail"
+      register: gather_logical_router
+
+    - name: "enable mode"
+      cli_command:
+        command: enable
+
+    - name: "build interface groups"
+      cli_config:
+        config: "interface-group {{ item.0.name }}; description {{ item.0.description }}; mode {{ item.0.mode }}; member switch {{ item.1.switch }} interface {{ item.1.interface }};"
+      loop: "{{ interface_groups | subelements('members', 'skip_missing=True') }}"
+      when: gather_iface.stdout.find(item.0.name) == -1 and item.0.state == 'present'
+
+    - name: "build tenants"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; description {{ item.tenant_desc }};"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.state == 'present'
+
+    - name: "configure system tenant connection"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; route 0.0.0.0/0 next-hop tenant system; interface tenant system; import-route; tenant system; logical-router; interface tenant {{ item.tenant_name }}; export-route;"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.system_connection and item.state == 'present'
+
+    - name: "build L2 segments"
+      cli_config:
+        config: "tenant {{ item.0.tenant_name }}; segment {{ item.0.segment_name }}; description {{ item.0.segment_desc }}; member interface-group {{ item.1 }} vlan {{ item.0.vlan }};"
+      loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"
+      when: gather_segments.stdout.find(item.0.segment_name) == -1 and item.0.state == 'present'
+
+    - name: "build L3 segments"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; interface segment {{ item.segment_name }}; ip address {{ item.ip }};"
+      loop: "{{ segments }}"
+      when: gather_logical_router.stdout.find(item.ip) == -1 and item.state == 'present' and item.ip != 'null'
+
+    - name: "delete system tenant connection"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; no route 0.0.0.0/0 next-hop tenant system; no interface tenant system; tenant system; logical-router; no interface tenant {{ item.tenant_name }};"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) != -1 and item.system_connection and item.state == 'absent'
+
+    - name: "delete L3 segments"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; no interface segment {{ item.segment_name }};"
+      loop: "{{ segments }}"
+      when: gather_logical_router.stdout.find(item.ip) != -1 and item.state == 'absent'
+
+    - name: "delete L2 segments"
+      cli_config:
+        config: "tenant {{ item.0.tenant_name }}; no segment {{ item.0.segment_name }};"
+      loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"
+      when: gather_segments.stdout.find(item.0.segment_name) != -1 and item.0.state == 'absent'
+
+    - name: "delete tenants"
+      cli_config:
+        config: "no tenant {{ item.tenant_name }};"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) != -1 and item.state == 'absent'
+
+    - name: "delete interface groups"
+      cli_config:
+        config: "no interface-group {{ item.name }};"
+      loop: "{{ interface_groups }}"
+      when: gather_iface.stdout.find(item.name) != -1 and item.state == 'absent'
