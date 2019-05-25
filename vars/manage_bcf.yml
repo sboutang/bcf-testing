@@ -50,10 +50,6 @@ tenants:
     state: present
     system_connection: true
 
-    #  - tenant_name: only-this-tenant
-    #    tenant_desc: "'test only this one ansible'"
-    #    system_connection: true
-
 segments:
   - vlan: 260
     tenant_name: Default-VRF
