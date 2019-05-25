@@ -71,7 +71,7 @@
       cli_config:
         config: "tenant {{ item.tenant_name }}; logical-router; no interface segment {{ item.segment_name }};"
       loop: "{{ segments }}"
-      when: gather_logical_router.stdout.find(item.ip) != -1 and item.state == 'absent'
+      when: gather_logical_router.stdout.find(item.ip) != -1 and item.state == 'absent' and item.ip != 'null'
 
     - name: "delete L2 segments"
       cli_config:
