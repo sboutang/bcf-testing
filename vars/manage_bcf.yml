@@ -9,46 +9,53 @@ interface_groups:
       - switch: mn-pcclab-R1L2
         interface: ethernet40
 
-  - name: lab-only-w-desc
-    mode: lacp
-    description: "'this is a long description'"
-    state: absent
-    members:
-      - switch: mn-pcclab-R1L1
-        interface: ethernet46
-      - switch: mn-pcclab-R1L2
-        interface: ethernet46
-
-  - name: lab-only-without-desc
-    mode: lacp
-    description: "' '"
-    state: absent
-    members:
-      - switch: mn-pcclab-R1L1
-        interface: ethernet47
-      - switch: mn-pcclab-R1L2
-        interface: ethernet47
+        # interface group with no description
+        #
+        #  - name: lab-only-without-desc
+        #    mode: lacp
+        #    description: "' '"
+        #    state: present
+        #    members:
+        #      - switch: mn-pcclab-R1L1
+        #        interface: ethernet47
+        #      - switch: mn-pcclab-R1L2
+        #        interface: ethernet47
 
 tenants:
   - tenant_name: test-boomer
-    tenant_desc: "'this is just a test ansible'"
+    tenant_desc: "'ansible automation tenant 1'"
     state: present
+    multicast: false
     system_connection: true
+    import_sys_routes: true
 
   - tenant_name: another-one
-    tenant_desc: "'test tenant2 ansible'"
+    tenant_desc: "'ansible automation tenant 2'"
     state: present
+    multicast: false
     system_connection: true
+    import_sys_routes: true
 
   - tenant_name: super-segmented
-    tenant_desc: "'another automation test ansible'"
+    tenant_desc: "'ansible automation tenant 3'"
     state: present
+    multicast: false
     system_connection: false
+    import_sys_routes: false
 
   - tenant_name: super-new
-    tenant_desc: "'test super-new ansible'"
+    tenant_desc: "'ansible automation tenant 4'"
     state: present
+    multicast: false
     system_connection: true
+    import_sys_routes: true
+
+  - tenant_name: NTNX-CVM2
+    tenant_desc: "'ansible automation CVM'"
+    state: present
+    multicast: true
+    system_connection: true
+    import_sys_routes: false
 
 segments:
   - vlan: 260
@@ -57,6 +64,7 @@ segments:
     segment_name: vlan260
     segment_desc: "'automation test vlan260'"
     state: present
+    tagged: true
     interface_groups:
       - "mn-pcclab-core-sw-vpc17"
       - "mn-pcclab-esxi01-pg1"
@@ -68,6 +76,7 @@ segments:
     segment_desc: "'automation test vlan256'"
     segment_name: vlan256
     state: present
+    tagged: true
     interface_groups:
       - "mn-pcclab-core-sw-vpc17"
       - "mn-pcclab-esxi01-pg1"
@@ -79,6 +88,7 @@ segments:
     segment_desc: "'automation test vlan272'"
     segment_name: vlan272
     state: present
+    tagged: true
     interface_groups:
       - "mn-pcclab-core-sw-vpc17"
       - "mn-pcclab-esxi01-pg1"
@@ -90,6 +100,7 @@ segments:
     segment_desc: "'automation test vlan290'"
     segment_name: vlan290
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
 
@@ -99,6 +110,7 @@ segments:
     segment_desc: "'automation test vlan294'"
     segment_name: vlan294
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
 
@@ -108,6 +120,7 @@ segments:
     segment_desc: "'automation test vlan296'"
     segment_name: vlan296
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
 
@@ -117,6 +130,7 @@ segments:
     segment_desc: "'automation test vlan297'"
     segment_name: vlan297
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
 
@@ -126,6 +140,7 @@ segments:
     segment_desc: "'automation test vlan299'"
     segment_name: vlan299
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
 
@@ -135,5 +150,26 @@ segments:
     segment_desc: "'automation test vlan300'"
     segment_name: vlan300
     state: present
+    tagged: true
     interface_groups:
       - "lab-boomer"
+
+  - vlan: 301
+    tenant_name: super-segmented
+    ip: "null"
+    segment_desc: "'automation test vlan301'"
+    segment_name: vlan301
+    state: present
+    tagged: false
+    interface_groups:
+      - "lab-boomer"
+
+  - vlan: 286
+    tenant_name: NTNX-CVM2
+    ip: 10.255.201.206/29
+    segment_name: CVM2
+    segment_desc: "'automation test CVM2'"
+    state: present
+    tagged: true
+    interface_groups:
+      - "any"

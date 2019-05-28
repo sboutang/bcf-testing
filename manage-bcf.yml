@@ -43,17 +43,35 @@
       loop: "{{ tenants }}"
       when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.state == 'present'
 
+    - name: "enable multicast"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; multicast-enable;"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.state == 'present' and item.multicast
+
     - name: "configure system tenant connection"
       cli_config:
         config: "tenant {{ item.tenant_name }}; logical-router; route 0.0.0.0/0 next-hop tenant system; interface tenant system; import-route; tenant system; logical-router; interface tenant {{ item.tenant_name }}; export-route;"
       loop: "{{ tenants }}"
-      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.system_connection and item.state == 'present'
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.system_connection and item.state == 'present' and item.import_sys_routes
 
-    - name: "build L2 segments"
+    - name: "configure system tenant connection without system import"
+      cli_config:
+        config: "tenant {{ item.tenant_name }}; logical-router; route 0.0.0.0/0 next-hop tenant system; interface tenant system; tenant system; logical-router; interface tenant {{ item.tenant_name }}; export-route;"
+      loop: "{{ tenants }}"
+      when: gather_tenants.stdout.find(item.tenant_name) == -1 and item.system_connection and item.state == 'present' and not item.import_sys_routes
+
+    - name: "build L2 segments tagged"
       cli_config:
         config: "tenant {{ item.0.tenant_name }}; segment {{ item.0.segment_name }}; description {{ item.0.segment_desc }}; member interface-group {{ item.1 }} vlan {{ item.0.vlan }};"
       loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"
-      when: gather_segments.stdout.find(item.0.segment_name) == -1 and item.0.state == 'present'
+      when: gather_segments.stdout.find(item.0.segment_name) == -1 and item.0.state == 'present' and item.0.tagged
+
+    - name: "build L2 segments untagged"
+      cli_config:
+        config: "tenant {{ item.0.tenant_name }}; segment {{ item.0.segment_name }}; description {{ item.0.segment_desc }}; member interface-group {{ item.1 }} vlan untagged;"
+      loop: "{{ segments | subelements('interface_groups', 'skip_missing=True') }}"
+      when: gather_segments.stdout.find(item.0.segment_name) == -1 and item.0.state == 'present' and not item.0.tagged
 
     - name: "build L3 segments"
       cli_config:
